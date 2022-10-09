@@ -1,4 +1,4 @@
-# SR6-Camaras
+# Proyecto1 - Renderer
 # Graficas por computadora 
 # Esteban Aldana Guerra 20591
 
