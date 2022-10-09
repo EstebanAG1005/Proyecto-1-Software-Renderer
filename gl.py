@@ -154,13 +154,14 @@ def multiplicarMatrices(m1,m2):
 # Se definen colores Negro y Blanco para nuestro programa
 BLACK = color(0,0,0)
 WHITE = color(1,1,1)
+HUESO = color(245,245,220)
 
 class Render(object):
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.current_color  = WHITE
-        self.clear_color = BLACK
+        self.clear_color = HUESO
         self.clear()
         self.light = V3(0,0,1)
         self.activeTexture = None
@@ -459,6 +460,165 @@ class Render(object):
                     tA = V3(*objetos.texcoords[t1])
                     tB = V3(*objetos.texcoords[t2])
                     tC = V3(*objetos.texcoords[t3])
+                    #Mandamos los datos a la funcion que se encargara de dibujar el
+                    self.triangle(a,b,c, texture=texture, texture_coords=(tA,tB,tC), intensity=intensity)
+                # Si encuentra un archivo para el color
+                else:
+                    grey =round(255*intensity)
+                    if grey<0:
+                        continue
+                    self.triangle(a,b,c, color=color(grey,grey,grey))
+            else:
+                # assuming 4
+                f1 = face[0][0] - 1
+                f2 = face[1][0] - 1
+                f3 = face[2][0] - 1
+                f4 = face[3][0] - 1   
+
+                vertices = [
+                    self.transform(V3(*objetos.vertices[f1])),
+                    self.transform(V3(*objetos.vertices[f2])),
+                    self.transform(V3(*objetos.vertices[f3])),
+                    self.transform(V3(*objetos.vertices[f4]))
+                ]
+
+                normal = norm(cross(sub(vertices[0], vertices[1]), sub(vertices[1], vertices[2])))
+                intensity = dot(normal, self.light)
+                grey = round(255 * intensity)
+
+                A, B, C, D = vertices 
+
+                if not texture:
+                    grey = round(255 * intensity)
+                    if grey < 0:
+                        continue
+                    self.triangle(A, B, C, color(grey, grey, grey))
+                    self.triangle(A, C, D, color(grey, grey, grey))            
+                else:
+                    t1 = face[0][1] - 1
+                    t2 = face[1][1] - 1
+                    t3 = face[2][1] - 1
+                    t4 = face[3][1] - 1
+                    tA = V3(*objetos.texcoords[t1])
+                    tB = V3(*objetos.texcoords[t2])
+                    tC = V3(*objetos.texcoords[t3])
+                    tD = V3(*objetos.texcoords[t4])
+                    
+                    self.triangle(A, B, C, texture=texture, texture_coords=(tA, tB, tC), intensity=intensity)
+                    self.triangle(A, C, D, texture=texture, texture_coords=(tA, tC, tD), intensity=intensity)
+
+    def load2(self, filename, mtl=None, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0,0,0), texture=None):
+
+        self.loadModelMatrix(translate, scale, rotate) 
+        objetos = Obj(filename)
+        objetos.read()
+        self.light = V3(0,0,1)
+
+        #Ciclo para recorrer las carras
+        for face in objetos.faces:
+            vcount = len(face)
+            #Revisamos cada car
+            if vcount == 3:
+                f1 = face[0][0] - 1
+                f2 = face[1][0] - 1
+                f3 = face[2][0] - 1
+                #print(f1)
+                a = self.transform(V3(*objetos.vertices[f1]))
+                b = self.transform(V3(*objetos.vertices[f2]))
+                c = self.transform(V3(*objetos.vertices[f3]))
+                #Calculamos el vector vnormal
+                vnormal = norm(cross(sub(b,a), sub(c,a)))
+                intensity = dot(vnormal, self.light)
+                if intensity<0:
+                    continue
+                #Si no encuentra textura que haga lo siguiente
+                if texture:
+                    t1 = face[0][1] - 1
+                    t2 = face[1][1] - 1
+                    t3 = face[2][1] - 1
+                    tA = V3(*objetos.texcoords[t1])
+                    tB = V3(*objetos.texcoords[t2])
+                    tC = V3(*objetos.texcoords[t3])
+                    #Mandamos los datos a la funcion que se encargara de dibujar el
+                    self.triangle(a,b,c, texture=texture, texture_coords=(tA,tB,tC), intensity=intensity)
+                # Si encuentra un archivo para el color
+                else:
+                    grey =round(255*intensity)
+                    if grey<0:
+                        continue
+                    self.triangle(a,b,c, color=color(grey,grey,grey))
+            else:
+                # assuming 4
+                f1 = face[0][0] - 1
+                f2 = face[1][0] - 1
+                f3 = face[2][0] - 1
+                f4 = face[3][0] - 1   
+
+                vertices = [
+                    self.transform(V3(*objetos.vertices[f1])),
+                    self.transform(V3(*objetos.vertices[f2])),
+                    self.transform(V3(*objetos.vertices[f3])),
+                    self.transform(V3(*objetos.vertices[f4]))
+                ]
+
+                normal = norm(cross(sub(vertices[0], vertices[1]), sub(vertices[1], vertices[2])))
+                intensity = dot(normal, self.light)
+                grey = round(255 * intensity)
+
+                A, B, C, D = vertices 
+
+                if not texture:
+                    grey = round(255 * intensity)
+                    if grey < 0:
+                        continue
+                    self.triangle(A, B, C, color(grey, grey, grey))
+                    self.triangle(A, C, D, color(grey, grey, grey))            
+                else:
+                    t1 = face[0][1] - 1
+                    t2 = face[1][1] - 1
+                    t3 = face[2][1] - 1
+                    t4 = face[3][1] - 1
+                    tA = V3(*objetos.texcoords[t1],0)
+                    tB = V3(*objetos.texcoords[t2],0)
+                    tC = V3(*objetos.texcoords[t3],0)
+                    tD = V3(*objetos.texcoords[t4],0)
+                    
+                    self.triangle(A, B, C, texture=texture, texture_coords=(tA, tB, tC), intensity=intensity)
+                    self.triangle(A, C, D, texture=texture, texture_coords=(tA, tC, tD), intensity=intensity)
+
+
+    def load3(self, filename, mtl=None, translate=(0, 0, 0), scale=(1, 1, 1), rotate=(0,0,0), texture=None):
+
+        self.loadModelMatrix(translate, scale, rotate) 
+        objetos = Obj(filename)
+        objetos.read()
+        self.light = V3(0,0,1)
+
+        #Ciclo para recorrer las carras
+        for face in objetos.faces:
+            vcount = len(face)
+            #Revisamos cada car
+            if vcount == 3:
+                f1 = face[0][0] - 1
+                f2 = face[1][0] - 1
+                f3 = face[2][0] - 1
+                #print(f1)
+                a = self.transform(V3(*objetos.vertices[f1]))
+                b = self.transform(V3(*objetos.vertices[f2]))
+                c = self.transform(V3(*objetos.vertices[f3]))
+                #Calculamos el vector vnormal
+                vnormal = norm(cross(sub(b,a), sub(c,a)))
+                intensity = dot(vnormal, self.light)
+                if intensity<0:
+                    continue
+                #Si no encuentra textura que haga lo siguiente
+                if texture:
+                    t1 = face[0][1] - 1
+                    t2 = face[1][1] - 1
+                    t3 = face[2][1] - 1
+                    tA = V3(*objetos.texcoords[t1],0)
+                    tB = V3(*objetos.texcoords[t2],0)
+                    tC = V3(*objetos.texcoords[t3],0)
                     #Mandamos los datos a la funcion que se encargara de dibujar el
                     self.triangle(a,b,c, texture=texture, texture_coords=(tA,tB,tC), intensity=intensity)
                 # Si encuentra un archivo para el color
